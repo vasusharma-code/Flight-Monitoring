@@ -1,0 +1,154 @@
+-- MySQL dump 10.13  Distrib 5.5.62, for Win64 (AMD64)
+--
+-- Host: localhost    Database: flight_monitoring
+-- ------------------------------------------------------
+-- Server version	5.5.62
+
+/*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
+/*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
+/*!40101 SET @OLD_COLLATION_CONNECTION=@@COLLATION_CONNECTION */;
+/*!40101 SET NAMES utf8 */;
+/*!40103 SET @OLD_TIME_ZONE=@@TIME_ZONE */;
+/*!40103 SET TIME_ZONE='+00:00' */;
+/*!40014 SET @OLD_UNIQUE_CHECKS=@@UNIQUE_CHECKS, UNIQUE_CHECKS=0 */;
+/*!40014 SET @OLD_FOREIGN_KEY_CHECKS=@@FOREIGN_KEY_CHECKS, FOREIGN_KEY_CHECKS=0 */;
+/*!40101 SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='NO_AUTO_VALUE_ON_ZERO' */;
+/*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;
+
+--
+-- Table structure for table `airlines`
+--
+
+DROP TABLE IF EXISTS `airlines`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `airlines` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `name` varchar(255) NOT NULL,
+  `iata_code` varchar(10) NOT NULL,
+  `icao_code` varchar(10) NOT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `iata_code` (`iata_code`),
+  UNIQUE KEY `icao_code` (`icao_code`)
+) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=latin1;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `airlines`
+--
+
+LOCK TABLES `airlines` WRITE;
+/*!40000 ALTER TABLE `airlines` DISABLE KEYS */;
+INSERT INTO `airlines` VALUES (1,'Lufthansa','LH','DLH'),(2,'Ryanair','FR','RYR');
+/*!40000 ALTER TABLE `airlines` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `airports`
+--
+
+DROP TABLE IF EXISTS `airports`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `airports` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `name` varchar(255) NOT NULL,
+  `iata_code` varchar(10) NOT NULL,
+  `icao_code` varchar(10) NOT NULL,
+  `country` varchar(100) NOT NULL,
+  `city` varchar(100) NOT NULL,
+  `latitude` decimal(9,6) DEFAULT NULL,
+  `longitude` decimal(9,6) DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `iata_code` (`iata_code`),
+  UNIQUE KEY `icao_code` (`icao_code`)
+) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=latin1;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `airports`
+--
+
+LOCK TABLES `airports` WRITE;
+/*!40000 ALTER TABLE `airports` DISABLE KEYS */;
+INSERT INTO `airports` VALUES (1,'Frankfurt Airport','FRA','EDDF','Germany','Frankfurt',50.037900,8.562200),(2,'Berlin Brandenburg Airport','BER','EDDB','Germany','Berlin',52.366700,13.503300),(3,'Munich Airport','MUC','EDDM','Germany','Munich',48.353800,11.786100);
+/*!40000 ALTER TABLE `airports` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `flight_delays`
+--
+
+DROP TABLE IF EXISTS `flight_delays`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `flight_delays` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `flight_id` int(11) DEFAULT NULL,
+  `delay_duration` int(11) NOT NULL,
+  `claim_status` enum('Pending','Approved','Rejected') DEFAULT 'Pending',
+  PRIMARY KEY (`id`),
+  KEY `flight_id` (`flight_id`),
+  CONSTRAINT `flight_delays_ibfk_1` FOREIGN KEY (`flight_id`) REFERENCES `flights` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `flight_delays`
+--
+
+LOCK TABLES `flight_delays` WRITE;
+/*!40000 ALTER TABLE `flight_delays` DISABLE KEYS */;
+/*!40000 ALTER TABLE `flight_delays` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `flights`
+--
+
+DROP TABLE IF EXISTS `flights`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `flights` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `flight_number` varchar(20) NOT NULL,
+  `airline_id` int(11) DEFAULT NULL,
+  `departure_airport_id` int(11) DEFAULT NULL,
+  `arrival_airport_id` int(11) DEFAULT NULL,
+  `scheduled_departure` datetime NOT NULL,
+  `actual_departure` datetime DEFAULT NULL,
+  `scheduled_arrival` datetime NOT NULL,
+  `actual_arrival` datetime DEFAULT NULL,
+  `status` enum('on-time','delayed','canceled') NOT NULL,
+  `delay_duration` int(11) DEFAULT '0',
+  `icao24` varchar(20) NOT NULL,
+  PRIMARY KEY (`id`),
+  KEY `airline_id` (`airline_id`),
+  KEY `departure_airport_id` (`departure_airport_id`),
+  KEY `arrival_airport_id` (`arrival_airport_id`),
+  CONSTRAINT `flights_ibfk_1` FOREIGN KEY (`airline_id`) REFERENCES `airlines` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `flights_ibfk_2` FOREIGN KEY (`departure_airport_id`) REFERENCES `airports` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `flights_ibfk_3` FOREIGN KEY (`arrival_airport_id`) REFERENCES `airports` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=latin1;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `flights`
+--
+
+LOCK TABLES `flights` WRITE;
+/*!40000 ALTER TABLE `flights` DISABLE KEYS */;
+INSERT INTO `flights` VALUES (1,'LH123',1,1,2,'2024-03-20 10:00:00','2024-03-20 10:15:00','2024-03-20 12:00:00','2024-03-20 12:05:00','on-time',5,''),(2,'FR456',2,2,3,'2024-03-20 14:00:00','2024-03-20 16:30:00','2024-03-20 16:00:00','2024-03-20 18:30:00','delayed',150,''),(3,'N/A',NULL,NULL,NULL,'2025-03-20 16:14:34',NULL,'2025-03-20 16:14:34',NULL,'on-time',0,'3c675a');
+/*!40000 ALTER TABLE `flights` ENABLE KEYS */;
+UNLOCK TABLES;
+/*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
+
+/*!40101 SET SQL_MODE=@OLD_SQL_MODE */;
+/*!40014 SET FOREIGN_KEY_CHECKS=@OLD_FOREIGN_KEY_CHECKS */;
+/*!40014 SET UNIQUE_CHECKS=@OLD_UNIQUE_CHECKS */;
+/*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
+/*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
+/*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
+/*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
+
+-- Dump completed on 2025-03-20 16:33:44
